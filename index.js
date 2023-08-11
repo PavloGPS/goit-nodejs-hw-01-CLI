@@ -1,26 +1,40 @@
 const Contacts = require("./contacts");
+const { Command } = require("commander");
 
-// Contacts.listContacts().then(console.log).catch(console.error);
+const program = new Command();
+program
+  .option("-a, --action <type>", "choose action")
+  .option("-i, --id <type>", "user id")
+  .option("-n, --name <type>", "user name")
+  .option("-e, --email <type>", "user email")
+  .option("-p, --phone <type>", "user phone");
 
-// Contacts.getContactById("rsKkOQUi80UsgVPCcLZZW")
-//   .then(console.log)
-//   .catch(console.error);
+program.parse(process.argv);
 
-// Contacts.removeContact("4e2caba7-5a5c-47c7-bc87-16f47158f3f2")
-//   .then(console.log)
-//   .catch(console.error);
-// backup>>>
-//  {
-//     id: 'rsKkOQUi80UsgVPCcLZZW',
-//     name: 'Alec Howard',
-//     email: 'Donec.elementum@scelerisquescelerisquedui.net',
-//     phone: '(748) 206-2688'
-//   }
+const argv = program.opts();
 
-// Contacts.addContact({
-//   name: "Alec Howard",
-//   email: "Donec.elementum@scelerisquescelerisquedui.net",
-//   phone: "(748) 206-2688",
-// })
-//   .then(console.log)
-//   .catch(console.error);
+// TODO: рефакторити
+async function invokeAction({ action, id, name, email, phone }) {
+  switch (action) {
+    case "list":
+      const contactsList = await Contacts.listContacts();
+      return contactsList;
+
+    case "get":
+      const contact = await Contacts.getContactById(id);
+      return contact;
+
+    case "add":
+      const neWcontact = await Contacts.addContact({ name, email, phone });
+      return neWcontact;
+
+    case "remove":
+      const removedContact = await Contacts.removeContact(id);
+      return removedContact;
+
+    default:
+      console.warn("\x1B[31m Unknown action type!");
+  }
+}
+
+invokeAction(argv);
