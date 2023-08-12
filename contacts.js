@@ -7,35 +7,60 @@ const crypto = require("crypto");
 const contactsPath = path.join(__dirname, "db", "contacts.json");
 
 async function listContacts() {
-  const data = await fs.readFile(contactsPath, "utf-8");
-  const contactsList = JSON.parse(data);
-  return contactsList;
+  try {
+    const data = await fs.readFile(contactsPath, "utf-8");
+    const contactsList = JSON.parse(data);
+    return contactsList;
+  } catch (error) {
+    console.error("Error reading contacts:", error.message);
+    return null;
+  }
 }
 
 async function getContactById(contactId) {
-  const data = await listContacts();
-  return data.find((contact) => contact.id === contactId) || null;
+  try {
+    const data = await listContacts();
+    return data.find((contact) => contact.id === contactId) || null;
+  } catch (error) {
+    console.error("Error getting contact:", error.message);
+    return null;
+  }
 }
 
 async function removeContact(contactId) {
-  const contactToRemove = await getContactById(contactId);
-  if (contactToRemove) {
-    const data = await listContacts();
-    const updatedContacts = data.filter((contact) => contact.id !== contactId);
-    await fs.writeFile(contactsPath, JSON.stringify(updatedContacts, null, 2));
+  try {
+    const contactToRemove = await getContactById(contactId);
+    if (contactToRemove) {
+      const data = await listContacts();
+      const updatedContacts = data.filter(
+        (contact) => contact.id !== contactId
+      );
+      await fs.writeFile(
+        contactsPath,
+        JSON.stringify(updatedContacts, null, 2)
+      );
+    } else console.error("Contact not found");
+    return contactToRemove;
+  } catch (error) {
+    console.error("Error removing contact by ID:", error.message);
+    return null;
   }
-  return contactToRemove;
 }
 
 async function addContact(contact) {
-  const data = await listContacts();
+  try {
+    const data = await listContacts();
 
-  const newContact = { ...contact, id: crypto.randomUUID() };
+    const newContact = { ...contact, id: crypto.randomUUID() };
 
-  data.push(newContact);
+    data.push(newContact);
 
-  await fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
-  return newContact || null;
+    await fs.writeFile(contactsPath, JSON.stringify(data, null, 2));
+    return newContact || null;
+  } catch (error) {
+    console.error("Error adding contact:", error.message);
+    return null;
+  }
 }
 
 module.exports = {
